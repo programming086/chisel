@@ -32,7 +32,7 @@ class FBWatchInstanceVariableCommand(fb.FBCommand):
     objectAddress = int(fb.evaluateObjectExpression(commandForObject), 0)
 
     ivarOffsetCommand = '(ptrdiff_t)ivar_getOffset((void*)object_getInstanceVariable((id){}, "{}", 0))'.format(objectAddress, ivarName)
-    ivarOffset = fb.evaluateIntegerExpression(ivarOffsetCommand)
+    ivarOffset = int(fb.evaluateExpression(ivarOffsetCommand), 0)
 
     # A multi-statement command allows for variables scoped to the command, not permanent in the session like $variables.
     ivarSizeCommand = ('unsigned int size = 0;'
@@ -149,7 +149,6 @@ class FBMethodBreakpointCommand(fb.FBCommand):
     formattedCategory = category if category else ''
     breakpointFullName = '{}[{}{} {}]'.format(methodTypeCharacter, breakpointClassName, formattedCategory, selector)
 
-    breakpointCondition = None
     if targetIsClass:
       breakpointCondition = '(void*)object_getClass({}) == {}'.format(expressionForSelf, targetClass)
     else:
@@ -158,10 +157,10 @@ class FBMethodBreakpointCommand(fb.FBCommand):
     print 'Setting a breakpoint at {} with condition {}'.format(breakpointFullName, breakpointCondition)
 
     if category:
-      lldb.debugger.HandleCommand('breakpoint set --fullname "{}" --condition "{}"'.format(breakpointFullName, breakpointCondition))
+      lldb.debugger.HandleCommand('breakpoint set --skip-prologue false --fullname "{}" --condition "{}"'.format(breakpointFullName, breakpointCondition))
     else:
       breakpointPattern = '{}\[{}(\(.+\))? {}\]'.format(methodTypeCharacter, breakpointClassName, selector)
-      lldb.debugger.HandleCommand('breakpoint set --func-regex "{}" --condition "{}"'.format(breakpointPattern, breakpointCondition))
+      lldb.debugger.HandleCommand('breakpoint set --skip-prologue false --func-regex "{}" --condition "{}"'.format(breakpointPattern, breakpointCondition))
 
 def classItselfImplementsSelector(klass, selector):
   thisMethod = objc.class_getInstanceMethod(klass, selector)

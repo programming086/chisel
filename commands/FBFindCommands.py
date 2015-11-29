@@ -93,7 +93,7 @@ class FBFindViewCommand(fb.FBCommand):
 
 def printMatchesInViewOutputStringAndCopyFirstToClipboard(needle, haystack):
   first = None
-  for match in re.finditer('.*<.*(' + needle + ').*: (0x[0-9a-fA-F]*);.*', haystack, re.IGNORECASE):
+  for match in re.finditer('.*<.*(' + needle + ')\\S*: (0x[0-9a-fA-F]*);.*', haystack, re.IGNORECASE):
     view = match.groups()[-1]
     className = fb.evaluateExpressionValue('(id)[(' + view + ') class]').GetObjectDescription()
     print('{} {}'.format(view, className))
@@ -122,6 +122,6 @@ class FBTapLoggerCommand(fb.FBCommand):
   @staticmethod
   def taplog_callback(frame, bp_loc, internal_dict):
     parameterExpr = objc.functionPreambleExpressionForObjectParameterAtIndex(0)
-    lldb.debugger.HandleCommand('po [[[%s allTouches] anyObject] view]' % (parameterExpr))
+    lldb.debugger.HandleCommand('poobjc (UIView *)[[[%s allTouches] anyObject] view]' % (parameterExpr))
     # We don't want to proceed event (click on button for example), so we just skip it
     lldb.debugger.HandleCommand('thread return')

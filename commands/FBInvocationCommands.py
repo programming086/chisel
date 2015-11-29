@@ -101,12 +101,6 @@ def findArgAdressAtIndexFromStackFrame(frame, index):
 
 def prettyPrintInvocation(frame, invocation):
   object = fb.evaluateExpression('(id)[(id)' + invocation + ' target]')
-  selector = fb.evaluateExpressionValue('(char *)sel_getName((SEL)[(id)' + invocation + ' selector])').GetSummary()
-  selector = re.sub(r'^"|"$', '', selector)
-
-  objectClassValue = fb.evaluateExpressionValue('(id)object_getClass((id)' + object + ')')
-  objectClass = objectClassValue.GetObjectDescription()
-
   description = fb.evaluateExpressionValue('(id)' + invocation).GetObjectDescription()
   argDescriptions = description.splitlines(True)[4:]
 
@@ -120,8 +114,8 @@ def prettyPrintInvocation(frame, invocation):
     for argDescription in argDescriptions:
       s = re.sub(r'argument [0-9]+: ', '', argDescription)
 
-      lldb.debugger.HandleCommand('expr void *$v')
-      lldb.debugger.HandleCommand('expr (void)[' + invocation + ' getArgument:&$v atIndex:' + str(index) + ']')
+      lldb.debugger.HandleCommand('eobjc void *$v')
+      lldb.debugger.HandleCommand('eobjc (void)[' + invocation + ' getArgument:&$v atIndex:' + str(index) + ']')
 
       address = findArgAdressAtIndexFromStackFrame(frame, index)
 
